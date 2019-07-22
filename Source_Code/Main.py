@@ -5,20 +5,20 @@ import torch.nn.functional as F
 from torch_geometric.datasets import Planetoid
 
 class Graphsage(torch.nn.Module):
-    def __init__(self, input1, imput2):
+    def __init__(self, input1):
         super(Graphsage, self).__init__()
         self.conv1 = SAGEConv(dataset.num_node_features, input1)
-        self.conv2 = SAGEConv(input1, imput2)
-        self.conv3 = SAGEConv(imput2, dataset.num_classes)
+        self.conv2 = SAGEConv(input1, dataset.num_classes)
+        # self.conv3 = SAGEConv(imput2, dataset.num_classes)
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
 
         x = self.conv1(x, edge_index)
-        # x = F.relu(x)
-        x = F.dropout(x, training=self.training)
+        x = F.relu(x)
+        # x = F.dropout(x, training=self.training)
         x = self.conv2(x, edge_index)
         # x = F.relu(x)
-        x = self.conv3(x, edge_index)
+        # x = self.conv3(x, edge_index)
 
         return F.log_softmax(x, dim=1)
 
@@ -31,7 +31,7 @@ if __name__=="__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # 声明模型：数据集的节点特征数目，第一层输出，既第二层得到的节点特征数目，最后输出的特征数目，也就是分类情况
     data = data.to(device)
-    model = Graphsage(64, 32).to(device)
+    model = Graphsage(32).to(device)
 
     # 设置优化器
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
